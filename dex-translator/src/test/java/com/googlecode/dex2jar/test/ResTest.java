@@ -33,7 +33,7 @@ import org.junit.runners.model.Statement;
 
 import com.googlecode.d2j.node.DexClassNode;
 import com.googlecode.d2j.node.DexFileNode;
-import com.googlecode.d2j.reader.DexFileReader;
+import com.googlecode.d2j.reader.DexReader;
 
 /**
  * @author <a href="mailto:pxb1988@gmail.com">Panxiaobo</a>
@@ -99,7 +99,7 @@ public class ResTest {
                     File dex = TestUtils.dexP(child.files, new File(dir, child.name + ".dex"));
                     File distFile = new File(dex.getParentFile(), getBaseName(dex.getName()) + "_d2j.jar");
                     DexFileNode fileNode = new DexFileNode();
-                    DexFileReader r = new DexFileReader(dex);
+                    DexReader r = new DexReader(dex);
                     r.pipe(fileNode);
                     for (DexClassNode classNode : fileNode.clzs) {
                         TestUtils.translateAndCheck(fileNode, classNode);

@@ -3,7 +3,7 @@ package com.googlecode.dex2jar.tools;
 import com.googlecode.d2j.dex.ClassVisitorFactory;
 import com.googlecode.d2j.dex.Dex2Asm;
 import com.googlecode.d2j.node.DexFileNode;
-import com.googlecode.d2j.reader.DexFileReader;
+import com.googlecode.d2j.reader.DexReader;
 import org.objectweb.asm.*;
 
 import java.io.File;
@@ -61,9 +61,9 @@ public class GenerateCompileStubFromOdex extends BaseCmd {
     }
 
     private void doDex(ByteBuffer bs, final Path out) {
-        DexFileReader reader = new DexFileReader(bs);
+        DexReader reader = new DexReader(bs);
         DexFileNode fileNode = new DexFileNode();
-        reader.pipe(fileNode, DexFileReader.SKIP_CODE);
+        reader.pipe(fileNode, DexReader.SKIP_CODE);
         Dex2Asm dex2Asm = new Dex2Asm();
         dex2Asm.convertDex(fileNode, new ClassVisitorFactory() {
             @Override

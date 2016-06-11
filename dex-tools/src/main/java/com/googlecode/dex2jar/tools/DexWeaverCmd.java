@@ -9,7 +9,7 @@ import java.util.Map;
 
 import com.googlecode.d2j.Method;
 import com.googlecode.d2j.dex.writer.DexFileWriter;
-import com.googlecode.d2j.reader.DexFileReader;
+import com.googlecode.d2j.reader.DexReader;
 import com.googlecode.d2j.reader.Op;
 import com.googlecode.d2j.reader.zip.ZipUtil;
 import com.googlecode.d2j.smali.Utils;
@@ -116,12 +116,12 @@ public class DexWeaverCmd extends BaseCmd {
         };
         for (String f : remainingArgs) {
             byte[] data = ZipUtil.readDex(new File(f).toPath());
-            DexFileReader r = new DexFileReader(data);
+            DexReader r = new DexReader(data);
             r.pipe(fv);
         }
         if (stub != null) {
             byte[] data = ZipUtil.readDex(stub);
-            DexFileReader r = new DexFileReader(data);
+            DexReader r = new DexReader(data);
             r.pipe(new DexFileVisitor(out) {
                 @Override
                 public void visitEnd() {

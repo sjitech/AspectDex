@@ -6,7 +6,7 @@ import com.googlecode.d2j.Method;
 import com.googlecode.d2j.Visibility;
 import com.googlecode.d2j.dex.writer.DexFileWriter;
 import com.googlecode.d2j.dex.writer.DexWriteException;
-import com.googlecode.d2j.reader.DexFileReader;
+import com.googlecode.d2j.reader.DexReader;
 import com.googlecode.d2j.reader.Op;
 import com.googlecode.d2j.visitors.*;
 
@@ -63,7 +63,7 @@ public class AppWriterTest implements DexConstants {
     @Test
     public void test4() throws IOException {
         DexFileWriter w = new DexFileWriter();
-        DexFileReader dexFileReader = new DexFileReader(new File("../dex-translator/src/test/resources/dexes/i_jetty.dex"));
+        DexReader dexFileReader = new DexReader(new File("../dex-translator/src/test/resources/dexes/i_jetty.dex"));
         dexFileReader.pipe(w);
         w.toByteArray();
     }

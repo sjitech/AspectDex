@@ -4,7 +4,7 @@ import com.googlecode.d2j.visitors.DexFileVisitor;
 
 import java.util.List;
 
-public interface BaseDexFileReader {
+public interface BaseDexReader {
 
     void pipe(DexFileVisitor dv);
 

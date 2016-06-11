@@ -23,7 +23,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.googlecode.d2j.reader.DexFileReader;
+import com.googlecode.d2j.reader.DexReader;
 import com.googlecode.d2j.reader.zip.ZipUtil;
 import com.googlecode.d2j.visitors.DexClassVisitor;
 import com.googlecode.d2j.visitors.DexFileVisitor;
@@ -41,7 +41,7 @@ public class ASMifierFileV extends DexFileVisitor {
     int i = 0;
 
     public static void doData(byte[] data, Path destdir) throws IOException {
-        new DexFileReader(data).pipe(new ASMifierFileV(destdir, null));
+        new DexReader(data).pipe(new ASMifierFileV(destdir, null));
     }
 
     public static void doFile(Path srcDex) throws IOException {

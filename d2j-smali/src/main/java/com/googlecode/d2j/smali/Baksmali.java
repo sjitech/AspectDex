@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
-import com.googlecode.d2j.reader.DexFileReader;
+import com.googlecode.d2j.reader.DexReader;
 import com.googlecode.d2j.reader.zip.ZipUtil;
 
 public class Baksmali {
@@ -30,14 +30,14 @@ public class Baksmali {
     }
 
     public static Baksmali from(byte[] in) throws IOException {
-        return from(new DexFileReader(in));
+        return from(new DexReader(in));
     }
 
     public static Baksmali from(ByteBuffer in) throws IOException {
-        return from(new DexFileReader(in));
+        return from(new DexReader(in));
     }
 
-    public static Baksmali from(DexFileReader reader) {
+    public static Baksmali from(DexReader reader) {
         return new Baksmali(reader);
     }
 
@@ -59,10 +59,10 @@ public class Baksmali {
 
     boolean noDebug = false;
     boolean parameterRegisters = true;
-    DexFileReader reader;
+    DexReader reader;
     boolean useLocals = false;
 
-    private Baksmali(DexFileReader reader) {
+    private Baksmali(DexReader reader) {
         this.reader = reader;
     }
 
@@ -96,7 +96,7 @@ public class Baksmali {
 
     public void to(final Path base) {
         final BaksmaliDumper bs = new BaksmaliDumper(parameterRegisters, useLocals);
-        reader.pipe(new BaksmaliDexFileVisitor(base, bs), this.noDebug ? DexFileReader.SKIP_CODE : 0);
+        reader.pipe(new BaksmaliDexFileVisitor(base, bs), this.noDebug ? DexReader.SKIP_CODE : 0);
     }
 
     /**

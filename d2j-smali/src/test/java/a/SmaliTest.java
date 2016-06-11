@@ -3,7 +3,7 @@ package a;
 import com.googlecode.d2j.dex.writer.DexFileWriter;
 import com.googlecode.d2j.node.DexClassNode;
 import com.googlecode.d2j.node.DexFileNode;
-import com.googlecode.d2j.reader.DexFileReader;
+import com.googlecode.d2j.reader.DexReader;
 import com.googlecode.d2j.reader.zip.ZipUtil;
 import com.googlecode.d2j.smali.BaksmaliDumpOut;
 import com.googlecode.d2j.smali.BaksmaliDumper;
@@ -37,7 +37,7 @@ public class SmaliTest {
     }
 
     Map<String, DexClassNode> readDex(File path) throws IOException {
-        DexFileReader dexFileReader = new DexFileReader(ZipUtil.readDex(path));
+        DexReader dexFileReader = new DexReader(ZipUtil.readDex(path));
         DexFileNode dexFileNode = new DexFileNode();
         dexFileReader.pipe(dexFileNode);
         Map<String, DexClassNode> map = new HashMap<>();

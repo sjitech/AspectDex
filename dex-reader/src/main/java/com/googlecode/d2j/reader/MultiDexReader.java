@@ -10,11 +10,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class MultiDexFileReader implements BaseDexFileReader {
-    final private List<DexFileReader> readers = new ArrayList<>();
+public class MultiDexReader implements BaseDexReader {
+    final private List<DexReader> readers = new ArrayList<>();
     final private List<Item> items = new ArrayList<>();
 
-    public MultiDexFileReader(Collection<DexFileReader> readers) {
+    public MultiDexReader(Collection<DexReader> readers) {
         this.readers.addAll(readers);
         init();
     }
@@ -28,20 +28,20 @@ public class MultiDexFileReader implements BaseDexFileReader {
         return out.getBuf();
     }
 
-    public static BaseDexFileReader open(byte[] data) throws IOException {
+    public static BaseDexReader open(byte[] data) throws IOException {
         if (data.length < 3) {
             throw new IOException("File too small to be a dex/zip");
         }
         if ("dex".equals(new String(data, 0, 3, StandardCharsets.ISO_8859_1))) {// dex
-            return new DexFileReader(data);
+            return new DexReader(data);
         } else if ("PK".equals(new String(data, 0, 2, StandardCharsets.ISO_8859_1))) {// ZIP
-            TreeMap<String, DexFileReader> dexFileReaders = new TreeMap<>();
+            TreeMap<String, DexReader> dexFileReaders = new TreeMap<>();
             try (ZipFile zipFile = new ZipFile(data)) {
                 for (ZipEntry e : zipFile.entries()) {
                     String entryName = e.getName();
                     if (entryName.startsWith("classes") && entryName.endsWith(".dex")) {
                         if (!dexFileReaders.containsKey(entryName)) { // only the first one
-                            dexFileReaders.put(entryName, new DexFileReader(toByteArray(zipFile.getInputStream(e))));
+                            dexFileReaders.put(entryName, new DexReader(toByteArray(zipFile.getInputStream(e))));
                         }
                     }
                 }
@@ -51,7 +51,7 @@ public class MultiDexFileReader implements BaseDexFileReader {
             } else if (dexFileReaders.size() == 1) {
                 return dexFileReaders.firstEntry().getValue();
             } else {
-                return new MultiDexFileReader(dexFileReaders.values());
+                return new MultiDexReader(dexFileReaders.values());
             }
         }
         throw new IOException("the src file not a .dex or zip file");
@@ -59,7 +59,7 @@ public class MultiDexFileReader implements BaseDexFileReader {
 
     void init() {
         Set<String> classes = new HashSet<>();
-        for (DexFileReader reader : readers) {
+        for (DexReader reader : readers) {
             List<String> classNames = reader.getClassNames();
             for (int i = 0; i < classNames.size(); i++) {
                 String className = classNames.get(i);
@@ -106,10 +106,10 @@ public class MultiDexFileReader implements BaseDexFileReader {
 
     static class Item {
         int idx;
-        DexFileReader reader;
+        DexReader reader;
         String className;
 
-        public Item(int i, DexFileReader reader, String className) {
+        public Item(int i, DexReader reader, String className) {
             idx = i;
             this.reader = reader;
             this.className = className;

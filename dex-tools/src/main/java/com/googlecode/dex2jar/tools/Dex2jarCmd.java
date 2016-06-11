@@ -17,9 +17,9 @@
 package com.googlecode.dex2jar.tools;
 
 import com.googlecode.d2j.dex.Dex2jar;
-import com.googlecode.d2j.reader.BaseDexFileReader;
-import com.googlecode.d2j.reader.DexFileReader;
-import com.googlecode.d2j.reader.MultiDexFileReader;
+import com.googlecode.d2j.reader.BaseDexReader;
+import com.googlecode.d2j.reader.DexReader;
+import com.googlecode.d2j.reader.MultiDexReader;
 import com.googlecode.dex2jar.ir.ET;
 
 import java.io.File;
@@ -102,7 +102,7 @@ public class Dex2jarCmd extends BaseCmd {
             Path file = output == null ? currentDir.resolve(baseName + "-dex2jar.jar") : output;
             System.err.println("dex2jar " + fileName + " -> " + file);
 
-            BaseDexFileReader reader = MultiDexFileReader.open(Files.readAllBytes(new File(fileName).toPath()));
+            BaseDexReader reader = MultiDexReader.open(Files.readAllBytes(new File(fileName).toPath()));
             BaksmaliBaseDexExceptionHandler handler = notHandleException ? null : new BaksmaliBaseDexExceptionHandler();
             Dex2jar.from(reader).withExceptionHandler(handler).reUseReg(reuseReg).topoLogicalSort()
                     .skipDebug(!debugInfo).optimizeSynchronized(this.optmizeSynchronized).printIR(printIR)
@@ -124,7 +124,7 @@ public class Dex2jarCmd extends BaseCmd {
 
     @Override
     protected String getVersionString() {
-        return "reader-" + DexFileReader.class.getPackage().getImplementationVersion() + ", translator-"
+        return "reader-" + DexReader.class.getPackage().getImplementationVersion() + ", translator-"
                 + Dex2jar.class.getPackage().getImplementationVersion() + ", ir-"
                 + ET.class.getPackage().getImplementationVersion();
     }

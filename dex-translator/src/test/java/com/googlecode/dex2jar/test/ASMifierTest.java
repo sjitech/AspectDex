@@ -19,9 +19,9 @@ import java.io.File;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 
+import com.googlecode.d2j.reader.DexReader;
 import org.junit.Test;
 
-import com.googlecode.d2j.reader.DexFileReader;
 import com.googlecode.d2j.util.ASMifierFileV;
 import com.googlecode.dex2jar.tools.BaseCmd;
 
@@ -46,7 +46,7 @@ public class ASMifierTest {
                 }
             }
         } catch (Exception e) {
-            DexFileReader.niceExceptionMessage(e, 0);
+            DexReader.niceExceptionMessage(e, 0);
             throw e;
         }
     }

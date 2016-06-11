@@ -20,7 +20,7 @@ import com.googlecode.d2j.Method;
 import com.googlecode.d2j.dex.BaseDexExceptionHandler;
 import com.googlecode.d2j.dex.Dex2jar;
 import com.googlecode.d2j.node.DexMethodNode;
-import com.googlecode.d2j.reader.DexFileReader;
+import com.googlecode.d2j.reader.DexReader;
 import com.googlecode.d2j.smali.BaksmaliDumper;
 import com.googlecode.d2j.smali.Smali;
 import com.googlecode.dex2jar.ir.ET;
@@ -67,7 +67,7 @@ public class BaksmaliBaseDexExceptionHandler extends BaseDexExceptionHandler {
 
     public static String getVersionString() {
         List<String> vs = new ArrayList<>();
-        doAddVersion(vs, "dex-reader", DexFileReader.class);
+        doAddVersion(vs, "dex-reader", DexReader.class);
         doAddVersion(vs, "dex-reader-api", Method.class);
         doAddVersion(vs, "dex-ir", ET.class);
         doAddVersion(vs, "d2j-smali", Smali.class);
