@@ -15,15 +15,14 @@
  */
 package com.googlecode.dex2jar.test;
 
+import com.googlecode.d2j.util.ASMifierFileV;
+import com.googlecode.d2j.util.ExceptionUtil;
+import com.googlecode.dex2jar.tools.BaseCmd;
+import org.junit.Test;
+
 import java.io.File;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
-
-import com.googlecode.d2j.reader.DexReader;
-import org.junit.Test;
-
-import com.googlecode.d2j.util.ASMifierFileV;
-import com.googlecode.dex2jar.tools.BaseCmd;
 
 /**
  * @author <a href="mailto:pxb1988@gmail.com">Panxiaobo</a>
@@ -46,7 +45,7 @@ public class ASMifierTest {
                 }
             }
         } catch (Exception e) {
-            DexReader.niceExceptionMessage(e, 0);
+            ExceptionUtil.printStackTraceEx(e, 0);
             throw e;
         }
     }

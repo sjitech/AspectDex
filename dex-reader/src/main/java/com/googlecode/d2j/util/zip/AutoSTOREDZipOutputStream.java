@@ -16,12 +16,13 @@
  */
 package com.googlecode.d2j.util.zip;
 
-import com.googlecode.d2j.util.ByteArrayOutputStream;
+import com.googlecode.d2j.util.ByteArrayOutputStreamEx;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.zip.*;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Auto calc size/crc for STORED
@@ -33,7 +34,7 @@ public class AutoSTOREDZipOutputStream extends ZipOutputStream {
 
     private CRC32 crc = new CRC32();
     private ZipEntry delayedEntry;
-    private ByteArrayOutputStream delayedOutputStream;
+    private ByteArrayOutputStreamEx delayedOutputStream;
 
     @Override
     public void putNextEntry(ZipEntry e) throws IOException {
@@ -42,7 +43,7 @@ public class AutoSTOREDZipOutputStream extends ZipOutputStream {
         } else {
             delayedEntry = e;
             if (delayedOutputStream == null) {
-                delayedOutputStream = new ByteArrayOutputStream();
+                delayedOutputStream = new ByteArrayOutputStreamEx();
             }
         }
     }
@@ -51,7 +52,7 @@ public class AutoSTOREDZipOutputStream extends ZipOutputStream {
     public void closeEntry() throws IOException {
         ZipEntry delayedEntry = this.delayedEntry;
         if (delayedEntry != null) {
-            ByteArrayOutputStream delayedOutputStream = this.delayedOutputStream;
+            ByteArrayOutputStreamEx delayedOutputStream = this.delayedOutputStream;
             byte[] buf = delayedOutputStream.getBuf();
             int size = delayedOutputStream.size();
             delayedEntry.setSize(size);

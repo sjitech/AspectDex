@@ -24,7 +24,7 @@ import java.io.InputStream;
  */
 public class ByteStreams {
     public static byte[] toByteArray(InputStream is) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStreamEx out = new ByteArrayOutputStreamEx();
         byte[] buff = new byte[1024];
         for (int c = is.read(buff); c > 0; c = is.read(buff)) {
             out.write(buff, 0, c);

@@ -16,6 +16,18 @@
  */
 package com.googlecode.d2j.dex;
 
+import com.googlecode.d2j.converter.IR2JConverter;
+import com.googlecode.d2j.node.DexFileNode;
+import com.googlecode.d2j.node.DexMethodNode;
+import com.googlecode.d2j.reader.DexReader;
+import com.googlecode.dex2jar.ir.IrMethod;
+import com.googlecode.dex2jar.ir.stmt.LabelStmt;
+import com.googlecode.dex2jar.ir.stmt.Stmt;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,20 +39,6 @@ import java.nio.file.spi.FileSystemProvider;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.googlecode.d2j.node.DexMethodNode;
-import com.googlecode.d2j.reader.BaseDexReader;
-import com.googlecode.d2j.reader.DexReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-
-import com.googlecode.d2j.converter.IR2JConverter;
-import com.googlecode.d2j.node.DexFileNode;
-import com.googlecode.dex2jar.ir.IrMethod;
-import com.googlecode.dex2jar.ir.stmt.LabelStmt;
-import com.googlecode.dex2jar.ir.stmt.Stmt;
-
 public class Dex2jar {
     public static Dex2jar from(byte[] in) throws IOException {
         return from(new DexReader(in));
@@ -50,7 +48,7 @@ public class Dex2jar {
         return from(new DexReader(in));
     }
 
-    public static Dex2jar from(BaseDexReader reader) {
+    public static Dex2jar from(DexReader reader) {
         return new Dex2jar(reader);
     }
 
@@ -68,11 +66,11 @@ public class Dex2jar {
 
     private DexExceptionHandler exceptionHandler;
 
-    final private BaseDexReader reader;
+    final private DexReader reader;
     private int readerConfig;
     private int v3Config;
 
-    private Dex2jar(BaseDexReader reader) {
+    private Dex2jar(DexReader reader) {
         super();
         this.reader = reader;
         readerConfig |= DexReader.SKIP_DEBUG;
@@ -176,7 +174,7 @@ public class Dex2jar {
         return exceptionHandler;
     }
 
-    public BaseDexReader getReader() {
+    public DexReader getReader() {
         return reader;
     }
 

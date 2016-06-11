@@ -3,19 +3,23 @@ package com.googlecode.d2j.reader;
 import com.googlecode.d2j.*;
 import com.googlecode.d2j.node.DexAnnotationNode;
 import com.googlecode.d2j.util.ByteStreams;
+import com.googlecode.d2j.util.ExceptionUtil;
 import com.googlecode.d2j.util.Mutf8;
 import com.googlecode.d2j.util.zip.ZipEntry;
 import com.googlecode.d2j.util.zip.ZipFile;
 import com.googlecode.d2j.visitors.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UTFDataFormatException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class DexReader implements BaseDexReader {
+public class DexReader {
     final private List<SingleDexReader> readers = new ArrayList<>();
     final private List<Item> items = new ArrayList<>();
 
@@ -76,12 +80,10 @@ public class DexReader implements BaseDexReader {
         this(ByteStreams.toByteArray(is));
     }
 
-    @Override
     public void pipe(DexFileVisitor dv) {
         pipe(dv, 0);
     }
 
-    @Override
     public List<String> getClassNames() {
         return new AbstractList<String>() {
             @Override
@@ -96,7 +98,6 @@ public class DexReader implements BaseDexReader {
         };
     }
 
-    @Override
     public void pipe(DexFileVisitor dv, int config) {
         int size = items.size();
         for (int i = 0; i < size; i++) {
@@ -104,7 +105,6 @@ public class DexReader implements BaseDexReader {
         }
     }
 
-    @Override
     public void pipe(DexFileVisitor dv, int classIdx, int config) {
         Item item = items.get(classIdx);
         item.reader.pipe(dv, item.idx, config);
@@ -163,7 +163,7 @@ public class DexReader implements BaseDexReader {
      * @author <a href="mailto:pxb1988@gmail.com">Panxiaobo</a>
      * @version $Rev$
      */
-    public static class SingleDexReader implements BaseDexReader {
+    public static class SingleDexReader {
 
         // private static final int REVERSE_ENDIAN_CONSTANT = 0x78563412;
 
@@ -572,12 +572,10 @@ public class DexReader implements BaseDexReader {
          *
          * @param dv
          */
-        @Override
         public void pipe(DexFileVisitor dv) {
             this.pipe(dv, 0);
         }
 
-        @Override
         public List<String> getClassNames() {
             List<String> names = new ArrayList<>(class_defs_size);
             ByteBuffer in = classDefIn;
@@ -596,7 +594,6 @@ public class DexReader implements BaseDexReader {
          * @param config config flags, {@link #SKIP_CODE}, {@link #SKIP_DEBUG}, {@link #SKIP_ANNOTATION},
          *               {@link #SKIP_FIELD_CONSTANT}
          */
-        @Override
         public void pipe(DexFileVisitor dv, int config) {
             for (int cid = 0; cid < class_defs_size; cid++) {
                 pipe(dv, cid, config);
@@ -613,7 +610,6 @@ public class DexReader implements BaseDexReader {
          * @param config   config flags, {@link #SKIP_CODE}, {@link #SKIP_DEBUG}, {@link #SKIP_ANNOTATION},
          *                 {@link #SKIP_FIELD_CONSTANT}
          */
-        @Override
         public void pipe(DexFileVisitor dv, int classIdx, int config) {
             classDefIn.position(classIdx * 32);
             int class_idx = classDefIn.getInt();
@@ -638,7 +634,7 @@ public class DexReader implements BaseDexReader {
             } catch (Exception ex) {
                 DexException dexException = new DexException(ex, "Error process class: [%d]%s", class_idx, className);
                 if (0 != (config & IGNORE_READ_EXCEPTION)) {
-                    niceExceptionMessage(dexException, 0);
+                    ExceptionUtil.printStackTraceEx(dexException, 0);
                 } else {
                     throw dexException;
                 }
@@ -1685,25 +1681,4 @@ public class DexReader implements BaseDexReader {
             }
         }
     }
-
-    public static void niceExceptionMessage(Throwable t, int deep) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < deep + 1; i++) {
-            sb.append(".");
-        }
-        sb.append(' ');
-        if (t instanceof DexException) {
-            sb.append(t.getMessage());
-            System.err.println(sb.toString());
-            if (t.getCause() != null) {
-                niceExceptionMessage(t.getCause(), deep + 1);
-            }
-        } else {
-            if (t != null) {
-                System.err.println(sb.append("ROOT cause:").toString());
-                t.printStackTrace(System.err);
-            }
-        }
-    }
-
 }
