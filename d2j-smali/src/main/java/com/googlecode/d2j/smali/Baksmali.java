@@ -23,7 +23,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
 import com.googlecode.d2j.reader.DexReader;
-import com.googlecode.d2j.reader.zip.ZipUtil;
 
 public class Baksmali {
     private Baksmali() {
@@ -42,19 +41,19 @@ public class Baksmali {
     }
 
     public static Baksmali from(File in) throws IOException {
-        return from(ZipUtil.readDex(in));
+        return from(new DexReader(in));
     }
 
     public static Baksmali from(Path in) throws IOException {
-        return from(ZipUtil.readDex(in));
+        return from(new DexReader(in));
     }
 
     public static Baksmali from(InputStream in) throws IOException {
-        return from(ZipUtil.readDex(in));
+        return from(new DexReader(in));
     }
 
     public static Baksmali from(String in) throws IOException {
-        return from(new File(in));
+        return from(new DexReader(in));
     }
 
     boolean noDebug = false;

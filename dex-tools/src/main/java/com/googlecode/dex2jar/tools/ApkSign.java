@@ -27,7 +27,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 
-import com.googlecode.d2j.reader.zip.ZipUtil;
+import com.googlecode.d2j.util.ByteStreams;
 import com.googlecode.d2j.signapk.AbstractJarSign;
 import com.googlecode.d2j.signapk.SunJarSignImpl;
 import com.googlecode.d2j.signapk.TinySignImpl;
@@ -104,7 +104,7 @@ public class ApkSign extends BaseCmd {
                     X509Certificate cert = (X509Certificate) certificateFactory.generateCertificate(ApkSign.class
                             .getResourceAsStream("ApkSign.cer"));
                     KeyFactory rSAKeyFactory = KeyFactory.getInstance("RSA");
-                    PrivateKey privateKey = rSAKeyFactory.generatePrivate(new PKCS8EncodedKeySpec(ZipUtil
+                    PrivateKey privateKey = rSAKeyFactory.generatePrivate(new PKCS8EncodedKeySpec(ByteStreams
                             .toByteArray(ApkSign.class.getResourceAsStream("ApkSign.private"))));
 
                     signer = new SunJarSignImpl(cert, privateKey);

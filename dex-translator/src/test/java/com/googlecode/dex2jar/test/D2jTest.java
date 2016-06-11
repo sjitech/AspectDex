@@ -32,7 +32,6 @@ import org.junit.runners.model.Statement;
 import com.googlecode.d2j.node.DexClassNode;
 import com.googlecode.d2j.node.DexFileNode;
 import com.googlecode.d2j.reader.DexReader;
-import com.googlecode.d2j.reader.zip.ZipUtil;
 
 /**
  * @author <a href="mailto:pxb1988@gmail.com">Panxiaobo</a>
@@ -91,7 +90,7 @@ public class D2jTest {
             DexFileNode fileNode = new DexFileNode();
             DexReader reader = null;
             try {
-                reader = new DexReader(ZipUtil.readDex(f));
+                reader = new DexReader(f);
             } catch (IOException e) {
                 throw new RuntimeException("Fail to read dex:" + f);
             }

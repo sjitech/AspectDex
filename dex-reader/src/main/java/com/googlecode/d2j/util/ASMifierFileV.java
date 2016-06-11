@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.googlecode.d2j.reader.DexReader;
-import com.googlecode.d2j.reader.zip.ZipUtil;
 import com.googlecode.d2j.visitors.DexClassVisitor;
 import com.googlecode.d2j.visitors.DexFileVisitor;
 
@@ -40,8 +39,8 @@ public class ASMifierFileV extends DexFileVisitor {
     ArrayOut file = new ArrayOut();
     int i = 0;
 
-    public static void doData(byte[] data, Path destdir) throws IOException {
-        new DexReader(data).pipe(new ASMifierFileV(destdir, null));
+    public static void doData(byte[] data, Path dest) throws IOException {
+        new DexReader(data).pipe(new ASMifierFileV(dest, null));
     }
 
     public static void doFile(Path srcDex) throws IOException {
@@ -50,7 +49,7 @@ public class ASMifierFileV extends DexFileVisitor {
     }
 
     public static void doFile(Path srcDex, Path dest) throws IOException {
-        doData(ZipUtil.readDex(srcDex), dest);
+        new DexReader(srcDex).pipe(new ASMifierFileV(dest, null));
     }
 
     public static void main(String... args) throws IOException {

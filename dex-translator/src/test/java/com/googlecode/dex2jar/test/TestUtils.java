@@ -27,7 +27,7 @@ import com.googlecode.d2j.dex.Dex2Asm;
 import com.googlecode.d2j.node.DexClassNode;
 import com.googlecode.d2j.node.DexFileNode;
 import com.googlecode.d2j.node.DexMethodNode;
-import com.googlecode.d2j.reader.zip.ZipUtil;
+import com.googlecode.d2j.util.ByteStreams;
 import com.googlecode.d2j.smali.BaksmaliDumper;
 import com.googlecode.d2j.visitors.DexClassVisitor;
 import org.junit.Assert;
@@ -85,7 +85,7 @@ public abstract class TestUtils {
                 // PrintWriter pw = new PrintWriter(sw);
 
                 try (InputStream is = zipFile.getInputStream(entry)) {
-                    verify(new ClassReader(ZipUtil.toByteArray(is)));
+                    verify(new ClassReader(ByteStreams.toByteArray(is)));
                 }
                 Assert.assertTrue(sw.toString(), sw.toString().length() == 0);
             }

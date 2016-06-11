@@ -60,7 +60,7 @@ public class GenerateCompileStubFromOdex extends BaseCmd {
         }
     }
 
-    private void doDex(ByteBuffer bs, final Path out) {
+    private void doDex(ByteBuffer bs, final Path out) throws IOException {
         DexReader reader = new DexReader(bs);
         DexFileNode fileNode = new DexFileNode();
         reader.pipe(fileNode, DexReader.SKIP_CODE);

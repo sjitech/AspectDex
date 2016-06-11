@@ -1,6 +1,5 @@
 package com.googlecode.dex2jar.tools;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,7 +10,6 @@ import com.googlecode.d2j.Method;
 import com.googlecode.d2j.dex.writer.DexFileWriter;
 import com.googlecode.d2j.reader.DexReader;
 import com.googlecode.d2j.reader.Op;
-import com.googlecode.d2j.reader.zip.ZipUtil;
 import com.googlecode.d2j.smali.Utils;
 import com.googlecode.d2j.visitors.DexClassVisitor;
 import com.googlecode.d2j.visitors.DexCodeVisitor;
@@ -115,13 +113,11 @@ public class DexWeaverCmd extends BaseCmd {
             }
         };
         for (String f : remainingArgs) {
-            byte[] data = ZipUtil.readDex(new File(f).toPath());
-            DexReader r = new DexReader(data);
+            DexReader r = new DexReader(f);
             r.pipe(fv);
         }
         if (stub != null) {
-            byte[] data = ZipUtil.readDex(stub);
-            DexReader r = new DexReader(data);
+            DexReader r = new DexReader(stub);
             r.pipe(new DexFileVisitor(out) {
                 @Override
                 public void visitEnd() {

@@ -16,6 +16,8 @@
  */
 package com.googlecode.d2j.util.zip;
 
+import com.googlecode.d2j.util.ByteArrayOutputStream;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.*;
@@ -31,7 +33,7 @@ public class AutoSTOREDZipOutputStream extends ZipOutputStream {
 
     private CRC32 crc = new CRC32();
     private ZipEntry delayedEntry;
-    private AccessBufByteArrayOutputStream delayedOutputStream;
+    private ByteArrayOutputStream delayedOutputStream;
 
     @Override
     public void putNextEntry(ZipEntry e) throws IOException {
@@ -40,7 +42,7 @@ public class AutoSTOREDZipOutputStream extends ZipOutputStream {
         } else {
             delayedEntry = e;
             if (delayedOutputStream == null) {
-                delayedOutputStream = new AccessBufByteArrayOutputStream();
+                delayedOutputStream = new ByteArrayOutputStream();
             }
         }
     }
@@ -49,7 +51,7 @@ public class AutoSTOREDZipOutputStream extends ZipOutputStream {
     public void closeEntry() throws IOException {
         ZipEntry delayedEntry = this.delayedEntry;
         if (delayedEntry != null) {
-            AccessBufByteArrayOutputStream delayedOutputStream = this.delayedOutputStream;
+            ByteArrayOutputStream delayedOutputStream = this.delayedOutputStream;
             byte[] buf = delayedOutputStream.getBuf();
             int size = delayedOutputStream.size();
             delayedEntry.setSize(size);

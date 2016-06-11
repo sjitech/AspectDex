@@ -1,10 +1,8 @@
 package com.googlecode.d2j.reader.test;
 
 import java.io.IOException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import com.googlecode.d2j.reader.zip.ZipUtil;
+import com.googlecode.d2j.util.ByteStreams;
 import com.googlecode.d2j.util.zip.ZipFile;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
@@ -31,7 +29,7 @@ public class BadZipEntryFlagTest {
 
     @Test
     public void test0() throws IOException {
-        byte[] data = ZipUtil.toByteArray(BadZipEntryFlagTest.class.getResourceAsStream("/bad.zip"));
+        byte[] data = ByteStreams.toByteArray(BadZipEntryFlagTest.class.getResourceAsStream("/bad.zip"));
         try (ZipFile zip = new ZipFile(data)) {
             for (com.googlecode.d2j.util.zip.ZipEntry e : zip.entries()) {
                 System.out.println(e);

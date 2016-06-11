@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import com.googlecode.d2j.reader.BaseDexReader;
-import com.googlecode.d2j.reader.MultiDexReader;
+import com.googlecode.d2j.reader.DexReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -91,7 +91,7 @@ public class Dex2jarMultiThreadCmd extends BaseCmd {
         final Path errorFile = currentDir.resolve(baseName + "-error.zip");
         System.err.println("dex2jar " + fileName + " -> " + file);
         final BaksmaliBaseDexExceptionHandler exceptionHandler = new BaksmaliBaseDexExceptionHandler();
-        BaseDexReader reader = MultiDexReader.open(Files.readAllBytes(new File(fileName).toPath()));
+        BaseDexReader reader = new DexReader(fileName);
         DexFileNode fileNode = new DexFileNode();
         try {
             reader.pipe(fileNode, DexReader.SKIP_DEBUG | DexReader.IGNORE_READ_EXCEPTION);

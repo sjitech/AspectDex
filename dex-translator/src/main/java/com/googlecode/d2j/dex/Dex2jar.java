@@ -37,14 +37,13 @@ import org.objectweb.asm.Opcodes;
 
 import com.googlecode.d2j.converter.IR2JConverter;
 import com.googlecode.d2j.node.DexFileNode;
-import com.googlecode.d2j.reader.zip.ZipUtil;
 import com.googlecode.dex2jar.ir.IrMethod;
 import com.googlecode.dex2jar.ir.stmt.LabelStmt;
 import com.googlecode.dex2jar.ir.stmt.Stmt;
 
 public class Dex2jar {
     public static Dex2jar from(byte[] in) throws IOException {
-        return from(new DexReader(ZipUtil.readDex(in)));
+        return from(new DexReader(in));
     }
 
     public static Dex2jar from(ByteBuffer in) throws IOException {
