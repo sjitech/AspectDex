@@ -2,6 +2,7 @@ package com.googlecode.d2j.reader;
 
 import com.googlecode.d2j.*;
 import com.googlecode.d2j.node.DexAnnotationNode;
+import com.googlecode.d2j.util.ByteBuffers;
 import com.googlecode.d2j.util.ByteStreams;
 import com.googlecode.d2j.util.ExceptionUtil;
 import com.googlecode.d2j.util.Mutf8;
@@ -248,7 +249,7 @@ public class DexReader {
             // and 20 bytes signature
             // and uint file_size
             // and uint header_size 0x70
-            skip(in, 4 + 20 + 4 + 4);
+            ByteBuffers.skip(in, 4 + 20 + 4 + 4);
 
             int endian_tag = in.getInt();
             if (endian_tag != ENDIAN_CONSTANT) {
@@ -258,7 +259,7 @@ public class DexReader {
             // skip uint link_size
             // and uint link_off
             // and uint map_off
-            skip(in, 4 + 4 + 4);
+            ByteBuffers.skip(in, 4 + 4 + 4);
 
             string_ids_size = in.getInt();
             int string_ids_off = in.getInt();
@@ -274,12 +275,12 @@ public class DexReader {
             int class_defs_off = in.getInt();
             // skip uint data_size data_off
 
-            stringIdIn = slice(in, string_ids_off, string_ids_size * 4);
-            typeIdIn = slice(in, type_ids_off, type_ids_size * 4);
-            protoIdIn = slice(in, proto_ids_off, proto_ids_size * 12);
-            fieldIdIn = slice(in, field_ids_off, field_ids_size * 8);
-            methoIdIn = slice(in, method_ids_off, method_ids_size * 8);
-            classDefIn = slice(in, class_defs_off, class_defs_size * 32);
+            stringIdIn = ByteBuffers.slice(in, string_ids_off, string_ids_size * 4);
+            typeIdIn = ByteBuffers.slice(in, type_ids_off, type_ids_size * 4);
+            protoIdIn = ByteBuffers.slice(in, proto_ids_off, proto_ids_size * 12);
+            fieldIdIn = ByteBuffers.slice(in, field_ids_off, field_ids_size * 8);
+            methoIdIn = ByteBuffers.slice(in, method_ids_off, method_ids_size * 8);
+            classDefIn = ByteBuffers.slice(in, class_defs_off, class_defs_size * 32);
 
             in.position(0);
             annotationsDirectoryItemIn = in.duplicate().order(ByteOrder.LITTLE_ENDIAN);
@@ -301,114 +302,12 @@ public class DexReader {
          * @return index into file's string ids table, -1 means null
          */
         private static int readStringIndex(ByteBuffer bs) {
-            int offsetIndex = readULeb128i(bs);
+            int offsetIndex = ByteBuffers.readULeb128i(bs);
             return offsetIndex - 1;
-        }
-
-        static ByteBuffer slice(ByteBuffer in, int offset, int length) {
-            in.position(offset);
-            ByteBuffer b = in.slice();
-            b.limit(length);
-            b.order(ByteOrder.LITTLE_ENDIAN);
-            return b;
-        }
-
-        private static void skip(ByteBuffer in, int bytes) {
-            in.position(in.position() + bytes);
-        }
-
-        private static long readIntBits(ByteBuffer in, int before) {
-            int length = ((before >> 5) & 0x7) + 1;
-            long value = 0;
-            for (int j = 0; j < length; j++) {
-                value |= ((long) (0xFF & in.get())) << (j * 8);
-            }
-            int shift = (8 - length) * 8;
-            return value << shift >> shift;
-        }
-
-        private static long readUIntBits(ByteBuffer in, int before) {
-            int length = ((before >> 5) & 0x7) + 1;
-            long value = 0;
-            for (int j = 0; j < length; j++) {
-                value |= ((long) (0xFF & in.get())) << (j * 8);
-            }
-            return value;
-        }
-
-        private static long readFloatBits(ByteBuffer in, int before) {
-            int bytes = ((before >> 5) & 0x7) + 1;
-            long result = 0L;
-            for (int i = 0; i < bytes; ++i) {
-                result |= ((long) (0xFF & in.get())) << (i * 8);
-            }
-            result <<= (8 - bytes) * 8;
-            return result;
-        }
-
-        static int sshort(byte[] data, int offset) {
-            return (data[offset + 1] << 8) | (0xFF & data[offset]);
-        }
-
-        static int ushort(byte[] data, int offset) {
-            return ((0xFF & data[offset + 1]) << 8) | (0xFF & data[offset]);
-        }
-
-        static int sint(byte[] data, int offset) {
-            return (data[offset + 3] << 24) | ((0xFF & data[offset + 2]) << 16) | ((0xFF & data[offset + 1]) << 8)
-                    | ((0xFF & data[offset]));
-        }
-
-        static int uint(byte[] data, int offset) {
-            return sint(data, offset);
         }
 
         static void WARN(String fmt, Object... args) {
             System.err.println(String.format(fmt, args));
-        }
-
-        static int ubyte(byte[] insns, int offset) {
-            return 0xFF & insns[offset];
-        }
-
-        static int sbyte(byte[] insns, int offset) {
-            return insns[offset];
-        }
-
-        private static void order(Map<Integer, DexLabel> labelsMap, int offset) {
-            if (!labelsMap.containsKey(offset)) {
-                labelsMap.put(offset, new DexLabel(offset));
-            }
-        }
-
-        public static int readULeb128i(ByteBuffer in) {
-            int value = 0;
-            int count = 0;
-            int b = in.get();
-            while ((b & 0x80) != 0) {
-                value |= (b & 0x7f) << count;
-                count += 7;
-                b = in.get();
-            }
-            value |= (b & 0x7f) << count;
-            return value;
-        }
-
-        public static int readLeb128i(ByteBuffer in) {
-            int bitpos = 0;
-            int vln = 0;
-            do {
-                int inp = in.get();
-                vln |= (inp & 0x7F) << bitpos;
-                bitpos += 7;
-                if ((inp & 0x80) == 0) {
-                    break;
-                }
-            } while (true);
-            if (((1L << (bitpos - 1)) & vln) != 0) {
-                vln -= (1L << bitpos);
-            }
-            return vln;
         }
 
         private static void DEBUG_DEBUG(String fmt, Object... args) {
@@ -420,8 +319,8 @@ public class DexReader {
             ByteBuffer in = debugInfoIn;
             in.position(offset);
             int address = 0;
-            int line = readULeb128i(in);
-            int szParams = readULeb128i(in);
+            int line = ByteBuffers.readULeb128i(in);
+            int szParams = ByteBuffers.readULeb128i(in);
             LocalEntry lastEntryForReg[] = new LocalEntry[regSize];
             int argsSize = 0;
             for (String paramType : method.getParameterTypes()) {
@@ -464,7 +363,7 @@ public class DexReader {
 
                 switch (opcode) {
                     case DBG_START_LOCAL: {
-                        int reg = readULeb128i(in);
+                        int reg = ByteBuffers.readULeb128i(in);
                         int nameIdx = readStringIndex(in);
                         int typeIdx = readStringIndex(in);
                         String name = getString(nameIdx);
@@ -472,13 +371,13 @@ public class DexReader {
                         DEBUG_DEBUG("Start: v%d :%s, %s", reg, name, type);
                         LocalEntry le = new LocalEntry(name, type);
                         lastEntryForReg[reg] = le;
-                        order(labelMap, address);
+                        ByteBuffers.order(labelMap, address);
                         dcv.visitStartLocal(reg, labelMap.get(address), name, type, null);
                     }
                     break;
 
                     case DBG_START_LOCAL_EXTENDED: {
-                        int reg = readULeb128i(in);
+                        int reg = ByteBuffers.readULeb128i(in);
                         int nameIdx = readStringIndex(in);
                         int typeIdx = readStringIndex(in);
                         int sigIdx = readStringIndex(in);
@@ -487,14 +386,14 @@ public class DexReader {
                         String signature = getString(sigIdx);
                         DEBUG_DEBUG("Start: v%d :%s, %s // %s", reg, name, type, signature);
                         LocalEntry le = new LocalEntry(name, type, signature);
-                        order(labelMap, address);
+                        ByteBuffers.order(labelMap, address);
                         dcv.visitStartLocal(reg, labelMap.get(address), name, type, signature);
                         lastEntryForReg[reg] = le;
                     }
                     break;
 
                     case DBG_RESTART_LOCAL: {
-                        int reg = readULeb128i(in);
+                        int reg = ByteBuffers.readULeb128i(in);
                         LocalEntry le = lastEntryForReg[reg];
                         if (le == null) {
                             throw new RuntimeException("Encountered RESTART_LOCAL on new v" + reg);
@@ -504,13 +403,13 @@ public class DexReader {
                         } else {
                             DEBUG_DEBUG("Start: v%d :%s, %s // %s", reg, le.name, le.type, le.signature);
                         }
-                        order(labelMap, address);
+                        ByteBuffers.order(labelMap, address);
                         dcv.visitRestartLocal(reg, labelMap.get(address));
                     }
                     break;
 
                     case DBG_END_LOCAL: {
-                        int reg = readULeb128i(in);
+                        int reg = ByteBuffers.readULeb128i(in);
                         LocalEntry le = lastEntryForReg[reg];
                         if (le == null) {
                             throw new RuntimeException("Encountered RESTART_LOCAL on new v" + reg);
@@ -520,7 +419,7 @@ public class DexReader {
                         } else {
                             DEBUG_DEBUG("End: v%d :%s, %s // %s", reg, le.name, le.type, le.signature);
                         }
-                        order(labelMap, address);
+                        ByteBuffers.order(labelMap, address);
                         dcv.visitEndLocal(reg, labelMap.get(address));
                     }
                     break;
@@ -530,19 +429,19 @@ public class DexReader {
                         return;
 
                     case DBG_ADVANCE_PC:
-                        address += readULeb128i(in);
+                        address += ByteBuffers.readULeb128i(in);
                         break;
 
                     case DBG_ADVANCE_LINE:
-                        line += readLeb128i(in);
+                        line += ByteBuffers.readLeb128i(in);
                         break;
 
                     case DBG_SET_PROLOGUE_END:
-                        order(labelMap, address);
+                        ByteBuffers.order(labelMap, address);
                         dcv.visitPrologue(labelMap.get(address));
                         break;
                     case DBG_SET_EPILOGUE_BEGIN:
-                        order(labelMap, address);
+                        ByteBuffers.order(labelMap, address);
                         dcv.visitEpiogue(labelMap.get(address));
                         break;
                     case DBG_SET_FILE:
@@ -559,7 +458,7 @@ public class DexReader {
                         address += adjopcode / DBG_LINE_RANGE;
                         line += DBG_LINE_BASE + (adjopcode % DBG_LINE_RANGE);
 
-                        order(labelMap, address);
+                        ByteBuffers.order(labelMap, address);
                         dcv.visitLineNumber(line, labelMap.get(address));
                         break;
 
@@ -646,28 +545,28 @@ public class DexReader {
             int type = b & 0x1f;
             switch (type) {
                 case VALUE_BYTE:
-                    return new Byte((byte) readIntBits(in, b));
+                    return new Byte((byte) ByteBuffers.readIntBits(in, b));
 
                 case VALUE_SHORT:
-                    return new Short((short) readIntBits(in, b));
+                    return new Short((short) ByteBuffers.readIntBits(in, b));
 
                 case VALUE_INT:
-                    return new Integer((int) readIntBits(in, b));
+                    return new Integer((int) ByteBuffers.readIntBits(in, b));
 
                 case VALUE_LONG:
-                    return new Long(readIntBits(in, b));
+                    return new Long(ByteBuffers.readIntBits(in, b));
 
                 case VALUE_CHAR:
-                    return new Character((char) readUIntBits(in, b));
+                    return new Character((char) ByteBuffers.readUIntBits(in, b));
 
                 case VALUE_STRING:
-                    return getString((int) readUIntBits(in, b));
+                    return getString((int) ByteBuffers.readUIntBits(in, b));
 
                 case VALUE_FLOAT:
-                    return Float.intBitsToFloat((int) (readFloatBits(in, b) >> 32));
+                    return Float.intBitsToFloat((int) (ByteBuffers.readFloatBits(in, b) >> 32));
 
                 case VALUE_DOUBLE:
-                    return Double.longBitsToDouble(readFloatBits(in, b));
+                    return Double.longBitsToDouble(ByteBuffers.readFloatBits(in, b));
 
                 case VALUE_NULL:
                     return null;
@@ -677,20 +576,20 @@ public class DexReader {
 
                 }
                 case VALUE_TYPE: {
-                    int type_id = (int) readUIntBits(in, b);
+                    int type_id = (int) ByteBuffers.readUIntBits(in, b);
                     return new DexType(getType(type_id));
                 }
                 case VALUE_ENUM: {
-                    return getField((int) readUIntBits(in, b));
+                    return getField((int) ByteBuffers.readUIntBits(in, b));
                 }
 
                 case VALUE_METHOD: {
-                    int method_id = (int) readUIntBits(in, b);
+                    int method_id = (int) ByteBuffers.readUIntBits(in, b);
                     return getMethod(method_id);
 
                 }
                 case VALUE_FIELD: {
-                    int field_id = (int) readUIntBits(in, b);
+                    int field_id = (int) ByteBuffers.readUIntBits(in, b);
                     return getField(field_id);
                 }
                 case VALUE_ARRAY: {
@@ -764,10 +663,10 @@ public class DexReader {
                 ByteBuffer in = classDataIn;
                 in.position(class_data_off);
 
-                int static_fields = (int) readULeb128i(in);
-                int instance_fields = (int) readULeb128i(in);
-                int direct_methods = (int) readULeb128i(in);
-                int virtual_methods = (int) readULeb128i(in);
+                int static_fields = (int) ByteBuffers.readULeb128i(in);
+                int instance_fields = (int) ByteBuffers.readULeb128i(in);
+                int direct_methods = (int) ByteBuffers.readULeb128i(in);
+                int virtual_methods = (int) ByteBuffers.readULeb128i(in);
                 {
                     int lastIndex = 0;
                     {
@@ -814,7 +713,7 @@ public class DexReader {
         }
 
         private Object[] read_encoded_array(ByteBuffer in) {
-            int size = readULeb128i(in);
+            int size = ByteBuffers.readULeb128i(in);
             Object[] constant = new Object[size];
             for (int i = 0; i < size; i++) {
                 constant[i] = readEncodedValue(in);
@@ -842,12 +741,12 @@ public class DexReader {
         }
 
         private DexAnnotationNode read_encoded_annotation(ByteBuffer in) {
-            int type_idx = readULeb128i(in);
-            int size = readULeb128i(in);
+            int type_idx = ByteBuffers.readULeb128i(in);
+            int size = ByteBuffers.readULeb128i(in);
             String _typeString = getType(type_idx);
             DexAnnotationNode ann = new DexAnnotationNode(_typeString, Visibility.RUNTIME);
             for (int i = 0; i < size; i++) {
-                int name_idx = readULeb128i(in);
+                int name_idx = ByteBuffers.readULeb128i(in);
                 String nameString = getString(name_idx);
                 Object value = readEncodedValue(in);
                 ann.items.add(new DexAnnotationNode.Item(nameString, value));
@@ -903,7 +802,7 @@ public class DexReader {
             }
             int offset = stringIdIn.getInt(id * 4);
             stringDataIn.position(offset);
-            int length = readULeb128i(stringDataIn);
+            int length = ByteBuffers.readULeb128i(stringDataIn);
             try {
                 StringBuilder buff = new StringBuilder((int) (length * 1.5));
                 return Mutf8.decode(stringDataIn, buff);
@@ -921,8 +820,8 @@ public class DexReader {
 
         private int acceptField(ByteBuffer in, int lastIndex, DexClassVisitor dcv,
                                 Map<Integer, Integer> fieldAnnotationPositions, Object value, int config) {
-            int diff = (int) readULeb128i(in);
-            int field_access_flags = (int) readULeb128i(in);
+            int diff = (int) ByteBuffers.readULeb128i(in);
+            int field_access_flags = (int) ByteBuffers.readULeb128i(in);
             int field_id = lastIndex + diff;
             Field field = getField(field_id);
             // //////////////////////////////////////////////////////////////
@@ -947,9 +846,9 @@ public class DexReader {
         private int acceptMethod(ByteBuffer in, int lastIndex, DexClassVisitor cv, Map<Integer, Integer> methodAnnos,
                                  Map<Integer, Integer> parameterAnnos, int config, boolean firstMethod) {
             int offset = in.position();
-            int diff = (int) readULeb128i(in);
-            int method_access_flags = (int) readULeb128i(in);
-            int code_off = (int) readULeb128i(in);
+            int diff = (int) ByteBuffers.readULeb128i(in);
+            int method_access_flags = (int) ByteBuffers.readULeb128i(in);
+            int code_off = (int) ByteBuffers.readULeb128i(in);
             int method_id = lastIndex + diff;
             Method method = getMethod(method_id);
 
@@ -1101,21 +1000,21 @@ public class DexReader {
                             throw new BadOpException("jump out of insns %s -> %04x", op, target);
                         }
                         q.add(target);
-                        order(labelsMap, target);
+                        ByteBuffers.order(labelsMap, target);
                         break;
                     case kFmt20t:
                     case kFmt21t:
-                        target = offset + sshort(insns, u1offset + 2);
+                        target = offset + ByteBuffers.sshort(insns, u1offset + 2);
                         if (target < 0 || target * 2 > insns.length) {
                             throw new BadOpException("jump out of insns %s -> %04x", op, target);
                         }
                         q.add(target);
-                        order(labelsMap, target);
+                        ByteBuffers.order(labelsMap, target);
                         break;
                     case kFmt22t:
-                        target = offset + sshort(insns, u1offset + 2);
+                        target = offset + ByteBuffers.sshort(insns, u1offset + 2);
 
-                        int u = ubyte(insns, u1offset + 1);
+                        int u = ByteBuffers.ubyte(insns, u1offset + 1);
                         boolean cmpSameReg = (u & 0x0F) == ((u >> 4) & 0x0F);
                         boolean skipTarget = false;
                         if (cmpSameReg) {
@@ -1141,53 +1040,53 @@ public class DexReader {
                                 throw new BadOpException("jump out of insns %s -> %04x", op, target);
                             }
                             q.add(target);
-                            order(labelsMap, target);
+                            ByteBuffers.order(labelsMap, target);
                         }
                         break;
                     case kFmt30t:
                     case kFmt31t:
-                        target = offset + sint(insns, u1offset + 2);
+                        target = offset + ByteBuffers.sint(insns, u1offset + 2);
                         if (target < 0 || target * 2 > insns.length) {
                             throw new BadOpException("jump out of insns %s -> %04x", op, target);
                         }
                         q.add(target);
-                        order(labelsMap, target);
+                        ByteBuffers.order(labelsMap, target);
                         break;
                     default:
                         break;
                 }
             }
             if (op.canSwitch()) {
-                order(labelsMap, offset + op.format.size);// default
-                int u1SwitchData = 2 * (offset + sint(insns, u1offset + 2));
+                ByteBuffers.order(labelsMap, offset + op.format.size);// default
+                int u1SwitchData = 2 * (offset + ByteBuffers.sint(insns, u1offset + 2));
                 if (u1SwitchData + 2 < insns.length) {
 
                     switch (insns[u1SwitchData + 1]) {
                         case 0x01: // packed-switch-data
                         {
-                            int size = ushort(insns, u1SwitchData + 2);
+                            int size = ByteBuffers.ushort(insns, u1SwitchData + 2);
                             int b = u1SwitchData + 8;// targets
                             for (int i = 0; i < size; i++) {
-                                target = offset + sint(insns, b + i * 4);
+                                target = offset + ByteBuffers.sint(insns, b + i * 4);
                                 if (target < 0 || target * 2 > insns.length) {
                                     throw new BadOpException("jump out of insns %s -> %04x", op, target);
                                 }
                                 q.add(target);
-                                order(labelsMap, target);
+                                ByteBuffers.order(labelsMap, target);
                             }
                             break;
                         }
                         case 0x02:// sparse-switch-data
                         {
-                            int size = ushort(insns, u1SwitchData + 2);
+                            int size = ByteBuffers.ushort(insns, u1SwitchData + 2);
                             int b = u1SwitchData + 4 + 4 * size;// targets
                             for (int i = 0; i < size; i++) {
-                                target = offset + sint(insns, b + i * 4);
+                                target = offset + ByteBuffers.sint(insns, b + i * 4);
                                 if (target < 0 || target * 2 > insns.length) {
                                     throw new BadOpException("jump out of insns %s -> %04x", op, target);
                                 }
                                 q.add(target);
-                                order(labelsMap, target);
+                                ByteBuffers.order(labelsMap, target);
                             }
                             break;
                         }
@@ -1204,22 +1103,22 @@ public class DexReader {
                 switch (op.indexType) {
                     case kIndexStringRef:
                         if (op.format == InstructionFormat.kFmt31c) {
-                            idx = uint(insns, u1offset + 2);
+                            idx = ByteBuffers.uint(insns, u1offset + 2);
                         } else {// other
-                            idx = ushort(insns, u1offset + 2);
+                            idx = ByteBuffers.ushort(insns, u1offset + 2);
                         }
                         canContinue = idx >= 0 && idx < string_ids_size;
                         break;
                     case kIndexTypeRef:
-                        idx = ushort(insns, u1offset + 2);
+                        idx = ByteBuffers.ushort(insns, u1offset + 2);
                         canContinue = idx < type_ids_size;
                         break;
                     case kIndexMethodRef:
-                        idx = ushort(insns, u1offset + 2);
+                        idx = ByteBuffers.ushort(insns, u1offset + 2);
                         canContinue = idx < method_ids_size;
                         break;
                     case kIndexFieldRef:
-                        idx = ushort(insns, u1offset + 2);
+                        idx = ByteBuffers.ushort(insns, u1offset + 2);
                         canContinue = idx < field_ids_size;
                         break;
                     default:
@@ -1236,18 +1135,18 @@ public class DexReader {
                             q.add(offset + op.format.size);
                             break;
                         case 0x01: {
-                            int size = ushort(insns, u1offset + 2);
+                            int size = ByteBuffers.ushort(insns, u1offset + 2);
                             q.add(offset + (size * 2) + 4);
                             break;
                         }
                         case 0x02: {
-                            int size = ushort(insns, u1offset + 2);
+                            int size = ByteBuffers.ushort(insns, u1offset + 2);
                             q.add(offset + (size * 4) + 2);
                             break;
                         }
                         case 0x03: {
-                            int element_width = ushort(insns, u1offset + 2);
-                            int size = uint(insns, u1offset + 4);
+                            int element_width = ByteBuffers.ushort(insns, u1offset + 2);
+                            int size = ByteBuffers.uint(insns, u1offset + 4);
                             q.add(offset + (size * element_width + 1) / 2 + 4);
                             break;
                         }
@@ -1269,14 +1168,14 @@ public class DexReader {
                 if (start_addr > insn_size) {
                     continue;
                 }
-                order(labelsMap, start_addr);
+                ByteBuffers.order(labelsMap, start_addr);
                 int end = start_addr + insn_count;
-                order(labelsMap, end);
+                ByteBuffers.order(labelsMap, end);
 
                 handlerIn.position(encoded_catch_handler_list + handler_offset);// move to encoded_catch_handler
 
                 boolean catchAll = false;
-                int listSize = (int) readLeb128i(handlerIn);
+                int listSize = (int) ByteBuffers.readLeb128i(handlerIn);
                 int handlerCount = listSize;
                 if (listSize <= 0) {
                     listSize = -listSize;
@@ -1286,16 +1185,16 @@ public class DexReader {
                 DexLabel labels[] = new DexLabel[handlerCount];
                 String types[] = new String[handlerCount];
                 for (int k = 0; k < listSize; k++) {
-                    int type_id = (int) readULeb128i(handlerIn);
-                    int handler = (int) readULeb128i(handlerIn);
-                    order(labelsMap, handler);
+                    int type_id = (int) ByteBuffers.readULeb128i(handlerIn);
+                    int handler = (int) ByteBuffers.readULeb128i(handlerIn);
+                    ByteBuffers.order(labelsMap, handler);
                     handlers.add(handler);
                     types[k] = getType(type_id);
                     labels[k] = labelsMap.get(handler);
                 }
                 if (catchAll) {
-                    int handler = (int) readULeb128i(handlerIn);
-                    order(labelsMap, handler);
+                    int handler = (int) ByteBuffers.readULeb128i(handlerIn);
+                    ByteBuffers.order(labelsMap, handler);
                     handlers.add(handler);
                     labels[listSize] = labelsMap.get(handler);
                 }
@@ -1380,7 +1279,7 @@ public class DexReader {
                         dcv.visitStmt1R(op, 0xFF & insns[u1offset + 1]);
                         break;
                     case kFmt12x:
-                        a = ubyte(insns, u1offset + 1);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
                         dcv.visitStmt2R(op, a & 0xF, a >> 4);
                         break;
                     // case kFmt20bc:break;
@@ -1389,16 +1288,16 @@ public class DexReader {
                         dcv.visitJumpStmt(op, -1, -1, labelsMap.get(target));
                         break;
                     case kFmt20t:
-                        target = offset + sshort(insns, u1offset + 2);
+                        target = offset + ByteBuffers.sshort(insns, u1offset + 2);
                         dcv.visitJumpStmt(op, -1, -1, labelsMap.get(target));
                         break;
                     case kFmt21t:
-                        target = offset + sshort(insns, u1offset + 2);
-                        dcv.visitJumpStmt(op, ubyte(insns, u1offset + 1), -1, labelsMap.get(target));
+                        target = offset + ByteBuffers.sshort(insns, u1offset + 2);
+                        dcv.visitJumpStmt(op, ByteBuffers.ubyte(insns, u1offset + 1), -1, labelsMap.get(target));
                         break;
                     case kFmt22t:
-                        target = offset + sshort(insns, u1offset + 2);
-                        a = ubyte(insns, u1offset + 1);
+                        target = offset + ByteBuffers.sshort(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
                         b = a & 0x0F;
                         c = a >> 4;
                         boolean ignore = false;
@@ -1426,16 +1325,16 @@ public class DexReader {
                         }
                         break;
                     case kFmt30t:
-                        target = offset + sint(insns, u1offset + 2);
+                        target = offset + ByteBuffers.sint(insns, u1offset + 2);
                         dcv.visitJumpStmt(op, -1, -1, labelsMap.get(target));
                         break;
                     case kFmt31t:
-                        target = offset + sint(insns, u1offset + 2);
-                        a = ubyte(insns, u1offset + 1);
+                        target = offset + ByteBuffers.sint(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
                         int u1SwitchData = 2 * target;
                         if (op == Op.FILL_ARRAY_DATA) {
-                            int element_width = ushort(insns, u1SwitchData + 2);
-                            int size = uint(insns, u1SwitchData + 4);
+                            int element_width = ByteBuffers.ushort(insns, u1SwitchData + 2);
+                            int size = ByteBuffers.uint(insns, u1SwitchData + 4);
                             switch (element_width) {
                                 case 1: {
                                     byte[] data = new byte[size];
@@ -1446,7 +1345,7 @@ public class DexReader {
                                 case 2: {
                                     short[] data = new short[size];
                                     for (int i = 0; i < size; i++) {
-                                        data[i] = (short) sshort(insns, u1SwitchData + 8 + 2 * i);
+                                        data[i] = (short) ByteBuffers.sshort(insns, u1SwitchData + 8 + 2 * i);
                                     }
                                     dcv.visitFillArrayDataStmt(op, a, data);
                                 }
@@ -1454,7 +1353,7 @@ public class DexReader {
                                 case 4: {
                                     int[] data = new int[size];
                                     for (int i = 0; i < size; i++) {
-                                        data[i] = sint(insns, u1SwitchData + 8 + 4 * i);
+                                        data[i] = ByteBuffers.sint(insns, u1SwitchData + 8 + 4 * i);
                                     }
                                     dcv.visitFillArrayDataStmt(op, a, data);
                                 }
@@ -1464,10 +1363,10 @@ public class DexReader {
                                     for (int i = 0; i < size; i++) {
                                         int t = u1SwitchData + 8 + 8 * i;
                                         long z = 0;
-                                        z |= ((long) ushort(insns, t + 0)) << 0;
-                                        z |= ((long) ushort(insns, t + 2)) << 16;
-                                        z |= ((long) ushort(insns, t + 4)) << 32;
-                                        z |= ((long) ushort(insns, t + 6)) << 48;
+                                        z |= ((long) ByteBuffers.ushort(insns, t + 0)) << 0;
+                                        z |= ((long) ByteBuffers.ushort(insns, t + 2)) << 16;
+                                        z |= ((long) ByteBuffers.ushort(insns, t + 4)) << 32;
+                                        z |= ((long) ByteBuffers.ushort(insns, t + 6)) << 48;
                                         data[i] = z;
                                     }
                                     dcv.visitFillArrayDataStmt(op, a, data);
@@ -1475,33 +1374,33 @@ public class DexReader {
                                 break;
                             }
                         } else if (op == Op.SPARSE_SWITCH) {
-                            int size = sshort(insns, u1SwitchData + 2);
+                            int size = ByteBuffers.sshort(insns, u1SwitchData + 2);
                             int keys[] = new int[size];
                             DexLabel labels[] = new DexLabel[size];
                             int z = u1SwitchData + 4;
                             for (int i = 0; i < size; i++) {
-                                keys[i] = sint(insns, z + i * 4);
+                                keys[i] = ByteBuffers.sint(insns, z + i * 4);
                             }
                             z += size * 4;
                             for (int i = 0; i < size; i++) {
-                                labels[i] = labelsMap.get(offset + sint(insns, z + i * 4));
+                                labels[i] = labelsMap.get(offset + ByteBuffers.sint(insns, z + i * 4));
                             }
                             dcv.visitSparseSwitchStmt(op, a, keys, labels);
                         } else {
-                            int size = sshort(insns, u1SwitchData + 2);
-                            int first_key = sint(insns, u1SwitchData + 4);
+                            int size = ByteBuffers.sshort(insns, u1SwitchData + 2);
+                            int first_key = ByteBuffers.sint(insns, u1SwitchData + 4);
                             DexLabel labels[] = new DexLabel[size];
                             int z = u1SwitchData + 8;
                             for (int i = 0; i < size; i++) {
-                                labels[i] = labelsMap.get(offset + sint(insns, z));
+                                labels[i] = labelsMap.get(offset + ByteBuffers.sint(insns, z));
                                 z += 4;
                             }
                             dcv.visitPackedSwitchStmt(op, a, first_key, labels);
                         }
                         break;
                     case kFmt21c:
-                        a = ubyte(insns, u1offset + 1);
-                        b = ushort(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.ushort(insns, u1offset + 2);
                         switch (op.indexType) {
                             case kIndexStringRef:
                                 dcv.visitConstStmt(op, a, getString(b));
@@ -1521,8 +1420,8 @@ public class DexReader {
                         }
                         break;
                     case kFmt22c:
-                        a = ubyte(insns, u1offset + 1);
-                        b = ushort(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.ushort(insns, u1offset + 2);
                         switch (op.indexType) {
                             case kIndexFieldRef:
                                 dcv.visitFieldStmt(op, a & 0xF, a >> 4, getField(b));
@@ -1536,16 +1435,16 @@ public class DexReader {
                         break;
                     case kFmt31c:
                         if (op.indexType == InstructionIndexType.kIndexStringRef) {
-                            a = ubyte(insns, u1offset + 1);
-                            b = uint(insns, u1offset + 2);
+                            a = ByteBuffers.ubyte(insns, u1offset + 1);
+                            b = ByteBuffers.uint(insns, u1offset + 2);
                             dcv.visitConstStmt(op, a, getString(b));
                         }
                         break;
                     case kFmt35c: {
-                        a = ubyte(insns, u1offset + 1);
-                        b = ushort(insns, u1offset + 2);
-                        int dc = ubyte(insns, u1offset + 4); // DC
-                        int fe = ubyte(insns, u1offset + 5); // FE
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.ushort(insns, u1offset + 2);
+                        int dc = ByteBuffers.ubyte(insns, u1offset + 4); // DC
+                        int fe = ByteBuffers.ubyte(insns, u1offset + 5); // FE
 
                         int regs[] = new int[a >> 4];
                         switch (a >> 4) {
@@ -1568,9 +1467,9 @@ public class DexReader {
                     }
                     break;
                     case kFmt3rc: {
-                        a = ubyte(insns, u1offset + 1);
-                        b = ushort(insns, u1offset + 2);
-                        c = ushort(insns, u1offset + 4);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.ushort(insns, u1offset + 2);
+                        c = ByteBuffers.ushort(insns, u1offset + 4);
                         int regs[] = new int[a];
                         for (int i = 0; i < a; i++) {
                             regs[i] = c + i;
@@ -1583,19 +1482,19 @@ public class DexReader {
                     }
                     break;
                     case kFmt22x:
-                        a = ubyte(insns, u1offset + 1);
-                        b = ushort(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.ushort(insns, u1offset + 2);
                         dcv.visitStmt2R(op, a, b);
                         break;
                     case kFmt23x:
-                        a = ubyte(insns, u1offset + 1);
-                        b = ubyte(insns, u1offset + 2);
-                        c = ubyte(insns, u1offset + 3);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.ubyte(insns, u1offset + 2);
+                        c = ByteBuffers.ubyte(insns, u1offset + 3);
                         dcv.visitStmt3R(op, a, b, c);
                         break;
                     case kFmt32x:
-                        a = ushort(insns, u1offset + 2);
-                        b = ushort(insns, u1offset + 4);
+                        a = ByteBuffers.ushort(insns, u1offset + 2);
+                        b = ByteBuffers.ushort(insns, u1offset + 4);
                         dcv.visitStmt2R(op, a, b);
                         break;
                     case kFmt11n:
@@ -1603,8 +1502,8 @@ public class DexReader {
                         dcv.visitConstStmt(op, a & 0xF, a >> 4);
                         break;
                     case kFmt21h:
-                        a = ubyte(insns, u1offset + 1);
-                        b = sshort(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.sshort(insns, u1offset + 2);
                         if (op == Op.CONST_HIGH16) {
                             dcv.visitConstStmt(op, a, b << 16);
                         } else {
@@ -1612,8 +1511,8 @@ public class DexReader {
                         }
                         break;
                     case kFmt21s:
-                        a = ubyte(insns, u1offset + 1);
-                        b = sshort(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.sshort(insns, u1offset + 2);
                         if (op == Op.CONST_16) {
                             dcv.visitConstStmt(op, a, b);
                         } else {
@@ -1621,20 +1520,20 @@ public class DexReader {
                         }
                         break;
                     case kFmt22b:
-                        a = ubyte(insns, u1offset + 1);
-                        b = ubyte(insns, u1offset + 2);
-                        c = sbyte(insns, u1offset + 3);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.ubyte(insns, u1offset + 2);
+                        c = ByteBuffers.sbyte(insns, u1offset + 3);
                         dcv.visitStmt2R1N(op, a, b, c);
                         break;
                     case kFmt22s:
-                        a = ubyte(insns, u1offset + 1);
-                        b = sshort(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.sshort(insns, u1offset + 2);
                         dcv.visitStmt2R1N(op, a & 0xF, a >> 4, b);
                         break;
                     // case kFmt22cs:break;
                     case kFmt31i:
-                        a = ubyte(insns, u1offset + 1);
-                        b = sint(insns, u1offset + 2);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
+                        b = ByteBuffers.sint(insns, u1offset + 2);
                         if (op == Op.CONST) {
                             dcv.visitConstStmt(op, a, b);
                         } else {
@@ -1642,12 +1541,12 @@ public class DexReader {
                         }
                         break;
                     case kFmt51l:
-                        a = ubyte(insns, u1offset + 1);
+                        a = ByteBuffers.ubyte(insns, u1offset + 1);
                         long z = 0;
-                        z |= ((long) ushort(insns, u1offset + 2)) << 0;
-                        z |= ((long) ushort(insns, u1offset + 4)) << 16;
-                        z |= ((long) ushort(insns, u1offset + 6)) << 32;
-                        z |= ((long) ushort(insns, u1offset + 8)) << 48;
+                        z |= ((long) ByteBuffers.ushort(insns, u1offset + 2)) << 0;
+                        z |= ((long) ByteBuffers.ushort(insns, u1offset + 4)) << 16;
+                        z |= ((long) ByteBuffers.ushort(insns, u1offset + 6)) << 32;
+                        z |= ((long) ByteBuffers.ushort(insns, u1offset + 8)) << 48;
                         dcv.visitConstStmt(op, a, z);
                         break;
                 }
