@@ -15,7 +15,6 @@
  */
 package com.googlecode.dex2jar.test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -96,7 +95,7 @@ public class D2jTest {
             } catch (IOException e) {
                 throw new RuntimeException("Fail to read dex:" + f);
             }
-            reader.accept(fileNode);
+            reader.pipe(fileNode);
             return fileNode;
         }
 

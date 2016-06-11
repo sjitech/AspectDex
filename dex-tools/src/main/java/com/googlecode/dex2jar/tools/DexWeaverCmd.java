@@ -117,12 +117,12 @@ public class DexWeaverCmd extends BaseCmd {
         for (String f : remainingArgs) {
             byte[] data = ZipUtil.readDex(new File(f).toPath());
             DexFileReader r = new DexFileReader(data);
-            r.accept(fv);
+            r.pipe(fv);
         }
         if (stub != null) {
             byte[] data = ZipUtil.readDex(stub);
             DexFileReader r = new DexFileReader(data);
-            r.accept(new DexFileVisitor(out) {
+            r.pipe(new DexFileVisitor(out) {
                 @Override
                 public void visitEnd() {
 

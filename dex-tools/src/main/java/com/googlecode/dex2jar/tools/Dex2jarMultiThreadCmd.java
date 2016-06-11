@@ -94,7 +94,7 @@ public class Dex2jarMultiThreadCmd extends BaseCmd {
         BaseDexFileReader reader = MultiDexFileReader.open(Files.readAllBytes(new File(fileName).toPath()));
         DexFileNode fileNode = new DexFileNode();
         try {
-            reader.accept(fileNode, DexFileReader.SKIP_DEBUG | DexFileReader.IGNORE_READ_EXCEPTION);
+            reader.pipe(fileNode, DexFileReader.SKIP_DEBUG | DexFileReader.IGNORE_READ_EXCEPTION);
         } catch (Exception ex) {
             exceptionHandler.handleFileException(ex);
             throw ex;

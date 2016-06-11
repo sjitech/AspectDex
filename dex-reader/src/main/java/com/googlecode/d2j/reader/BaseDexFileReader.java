@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface BaseDexFileReader {
 
-    void accept(DexFileVisitor dv);
+    void pipe(DexFileVisitor dv);
 
     List<String> getClassNames();
 
-    void accept(DexFileVisitor dv, int config);
+    void pipe(DexFileVisitor dv, int config);
 
-    void accept(DexFileVisitor dv, int classIdx, int config);
+    void pipe(DexFileVisitor dv, int classIdx, int config);
 }

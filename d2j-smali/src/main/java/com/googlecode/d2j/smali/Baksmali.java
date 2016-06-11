@@ -96,7 +96,7 @@ public class Baksmali {
 
     public void to(final Path base) {
         final BaksmaliDumper bs = new BaksmaliDumper(parameterRegisters, useLocals);
-        reader.accept(new BaksmaliDexFileVisitor(base, bs), this.noDebug ? DexFileReader.SKIP_CODE : 0);
+        reader.pipe(new BaksmaliDexFileVisitor(base, bs), this.noDebug ? DexFileReader.SKIP_CODE : 0);
     }
 
     /**

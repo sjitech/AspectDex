@@ -83,7 +83,7 @@ public class Dex2jar {
 
         DexFileNode fileNode = new DexFileNode();
         try {
-            reader.accept(fileNode, readerConfig | DexFileReader.IGNORE_READ_EXCEPTION);
+            reader.pipe(fileNode, readerConfig | DexFileReader.IGNORE_READ_EXCEPTION);
         } catch (Exception ex) {
             exceptionHandler.handleFileException(ex);
         }

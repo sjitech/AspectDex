@@ -34,7 +34,7 @@ public class TestDexClassV extends DexClassVisitor {
             public void visitEnd() {
                 super.visitEnd();
                 // FIXME impl
-                //methodNode.accept(cw);
+                //methodNode.pipe(cw);
             }
         };
     }

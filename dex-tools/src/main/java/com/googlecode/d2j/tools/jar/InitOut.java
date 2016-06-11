@@ -260,7 +260,7 @@ public class InitOut {
 //            @Override
 //            public void handle(boolean isDir, String name, FileWalker.StreamOpener current, Object nameObject) throws IOException {
 //                if ((!isDir) && name.endsWith(".class")) {
-//                    new ClassReader(current.get()).accept(collectVisitor, ClassReader.EXPAND_FRAMES);
+//                    new ClassReader(current.get()).pipe(collectVisitor, ClassReader.EXPAND_FRAMES);
 //                }
 //            }
 //        });

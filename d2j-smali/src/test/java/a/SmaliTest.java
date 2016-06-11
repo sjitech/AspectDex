@@ -39,7 +39,7 @@ public class SmaliTest {
     Map<String, DexClassNode> readDex(File path) throws IOException {
         DexFileReader dexFileReader = new DexFileReader(ZipUtil.readDex(path));
         DexFileNode dexFileNode = new DexFileNode();
-        dexFileReader.accept(dexFileNode);
+        dexFileReader.pipe(dexFileNode);
         Map<String, DexClassNode> map = new HashMap<>();
         for (DexClassNode c : dexFileNode.clzs) {
             map.put(c.className, c);

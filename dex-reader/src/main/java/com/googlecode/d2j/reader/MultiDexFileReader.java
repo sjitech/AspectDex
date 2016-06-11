@@ -71,8 +71,8 @@ public class MultiDexFileReader implements BaseDexFileReader {
     }
 
     @Override
-    public void accept(DexFileVisitor dv) {
-        accept(dv, 0);
+    public void pipe(DexFileVisitor dv) {
+        pipe(dv, 0);
     }
 
     @Override
@@ -91,17 +91,17 @@ public class MultiDexFileReader implements BaseDexFileReader {
     }
 
     @Override
-    public void accept(DexFileVisitor dv, int config) {
+    public void pipe(DexFileVisitor dv, int config) {
         int size = items.size();
         for (int i = 0; i < size; i++) {
-            accept(dv, i, config);
+            pipe(dv, i, config);
         }
     }
 
     @Override
-    public void accept(DexFileVisitor dv, int classIdx, int config) {
+    public void pipe(DexFileVisitor dv, int classIdx, int config) {
         Item item = items.get(classIdx);
-        item.reader.accept(dv, item.idx, config);
+        item.reader.pipe(dv, item.idx, config);
     }
 
     static class Item {

@@ -50,19 +50,19 @@ public class ASMifierClassV extends DexClassVisitor {
         out.s("import static com.googlecode.d2j.reader.Op.*;");
         out.s("public class %s {", javaClassName);
         out.push();
-        out.s("public static void accept(DexFileVisitor v) {");
+        out.s("public static void pipe(DexFileVisitor v) {");
         out.push();
         out.s("DexClassVisitor cv=v.visit(%s,%s,%s,%s);", Escape.classAcc(access_flags), Escape.v(className),
                 Escape.v(superClass), Escape.v(interfaceNames));
         out.s("if(cv!=null) {");
         out.push();
-        out.s("accept(cv);");
+        out.s("pipe(cv);");
         out.s("cv.visitEnd();");
         out.pop();
         out.s("}");
         out.pop();
         out.s("}");
-        out.s("public static void accept(DexClassVisitor cv) {");
+        out.s("public static void pipe(DexClassVisitor cv) {");
         out.push();
     }
 

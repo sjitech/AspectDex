@@ -16,9 +16,9 @@ public class SkipDupMethod {
         Assert.assertNotNull(is);
         DexFileReader reader = new DexFileReader(is);
         DexFileNode dfn1 = new DexFileNode();
-        reader.accept(dfn1, DexFileReader.KEEP_ALL_METHODS);
+        reader.pipe(dfn1, DexFileReader.KEEP_ALL_METHODS);
         DexFileNode dfn2 = new DexFileNode();
-        reader.accept(dfn2, 0);
+        reader.pipe(dfn2, 0);
         Assert.assertTrue(dfn1.clzs.get(0).methods.size() > dfn2.clzs.get(0).methods.size());
 
     }

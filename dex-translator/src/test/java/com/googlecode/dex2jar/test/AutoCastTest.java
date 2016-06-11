@@ -69,7 +69,7 @@ public class AutoCastTest implements DexConstants {
         // // check for I2S instruction
         // ClassReader cr = new ClassReader(data);
         // ClassNode cn = new ClassNode();
-        // cr.accept(cn, 0);
+        // cr.pipe(cn, 0);
         // boolean find = false;
         // for (Object m : cn.methods) {
         // MethodNode method = (MethodNode) m;

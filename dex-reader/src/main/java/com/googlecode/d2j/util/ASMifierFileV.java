@@ -41,7 +41,7 @@ public class ASMifierFileV extends DexFileVisitor {
     int i = 0;
 
     public static void doData(byte[] data, Path destdir) throws IOException {
-        new DexFileReader(data).accept(new ASMifierFileV(destdir, null));
+        new DexFileReader(data).pipe(new ASMifierFileV(destdir, null));
     }
 
     public static void doFile(Path srcDex) throws IOException {
@@ -79,7 +79,7 @@ public class ASMifierFileV extends DexFileVisitor {
         file.s("import com.googlecode.dj2.visitors.*;");
         file.s("public class Main {");
         file.push();
-        file.s("public static void accept(DexFileVisitor v) {");
+        file.s("public static void pipe(DexFileVisitor v) {");
         file.push();
 
     }
@@ -111,7 +111,7 @@ public class ASMifierFileV extends DexFileVisitor {
     public DexClassVisitor visit(int access_flags, String className, String superClass, String[] interfaceNames) {
         final String n = String.format("C%04d_", i++)
                 + className.substring(1, className.length() - 1).replace('/', '_').replace('$', '_');
-        file.s("%s.accept(v);", n);
+        file.s("%s.pipe(v);", n);
         return new ASMifierClassV(pkgName, n, access_flags, className, superClass, interfaceNames) {
 
             @Override

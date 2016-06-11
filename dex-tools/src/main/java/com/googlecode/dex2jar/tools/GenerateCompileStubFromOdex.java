@@ -63,7 +63,7 @@ public class GenerateCompileStubFromOdex extends BaseCmd {
     private void doDex(ByteBuffer bs, final Path out) {
         DexFileReader reader = new DexFileReader(bs);
         DexFileNode fileNode = new DexFileNode();
-        reader.accept(fileNode, DexFileReader.SKIP_CODE);
+        reader.pipe(fileNode, DexFileReader.SKIP_CODE);
         Dex2Asm dex2Asm = new Dex2Asm();
         dex2Asm.convertDex(fileNode, new ClassVisitorFactory() {
             @Override

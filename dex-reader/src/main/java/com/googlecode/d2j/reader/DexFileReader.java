@@ -33,7 +33,7 @@ import com.googlecode.d2j.visitors.*;
  * <pre>
  * DexFileVisitor visitor = new xxxFileVisitor();
  * DexFileReader reader = new DexFileReader(dexFile);
- * reader.accept(visitor);
+ * reader.pipe(visitor);
  * </pre>
  * 
  * @author <a href="mailto:pxb1988@gmail.com">Panxiaobo</a>
@@ -529,13 +529,13 @@ public class DexFileReader implements BaseDexFileReader {
     }
 
     /**
-     * equals to {@link #accept(DexFileVisitor, int)} with 0 as config
+     * equals to {@link #pipe(DexFileVisitor, int)} with 0 as config
      * 
      * @param dv
      */
     @Override
-    public void accept(DexFileVisitor dv) {
-        this.accept(dv, 0);
+    public void pipe(DexFileVisitor dv) {
+        this.pipe(dv, 0);
     }
 
     @Override
@@ -560,9 +560,9 @@ public class DexFileReader implements BaseDexFileReader {
      *            {@link #SKIP_FIELD_CONSTANT}
      */
     @Override
-    public void accept(DexFileVisitor dv, int config) {
+    public void pipe(DexFileVisitor dv, int config) {
         for (int cid = 0; cid < class_defs_size; cid++) {
-            accept(dv, cid, config);
+            pipe(dv, cid, config);
         }
         dv.visitEnd();
     }
@@ -580,7 +580,7 @@ public class DexFileReader implements BaseDexFileReader {
      *            {@link #SKIP_FIELD_CONSTANT}
      */
     @Override
-    public void accept(DexFileVisitor dv, int classIdx, int config) {
+    public void pipe(DexFileVisitor dv, int classIdx, int config) {
         classDefIn.position(classIdx * 32);
         int class_idx = classDefIn.getInt();
         int access_flags = classDefIn.getInt();
@@ -904,7 +904,7 @@ public class DexFileReader implements BaseDexFileReader {
                     try {
                         read_annotation_set_item(annotation_offset, dfv);
                     } catch (Exception e) {
-                        throw new DexException(e, "while accept annotation in field:%s.", field.toString());
+                        throw new DexException(e, "while pipe annotation in field:%s.", field.toString());
                     }
                 }
             }
@@ -947,7 +947,7 @@ public class DexFileReader implements BaseDexFileReader {
                         try {
                             read_annotation_set_item(annotation_offset, dmv);
                         } catch (Exception e) {
-                            throw new DexException(e, "while accept annotation in method:%s.", method.toString());
+                            throw new DexException(e, "while pipe annotation in method:%s.", method.toString());
                         }
                     }
                     Integer parameter_annotation_offset = parameterAnnos.get(method_id);
@@ -955,7 +955,7 @@ public class DexFileReader implements BaseDexFileReader {
                         try {
                             read_annotation_set_ref_list(parameter_annotation_offset, dmv);
                         } catch (Exception e) {
-                            throw new DexException(e, "while accept parameter annotation in method:%s.",
+                            throw new DexException(e, "while pipe parameter annotation in method:%s.",
                                     method.toString());
                         }
                     }
@@ -972,7 +972,7 @@ public class DexFileReader implements BaseDexFileReader {
                                 acceptCode(code_off, dcv, config, (method_access_flags & DexConstants.ACC_STATIC) != 0,
                                         method);
                             } catch (Exception e) {
-                                throw new DexException(e, "while accept code in method:[%s] @%08x", method.toString(),
+                                throw new DexException(e, "while pipe code in method:[%s] @%08x", method.toString(),
                                         code_off);
                             }
                         }
@@ -981,7 +981,7 @@ public class DexFileReader implements BaseDexFileReader {
                 dmv.visitEnd();
             }
         } catch (Exception e) {
-            throw new DexException(e, "while accept method:[%s]", method.toString());
+            throw new DexException(e, "while pipe method:[%s]", method.toString());
         }
 
         return method_id;
@@ -1003,7 +1003,7 @@ public class DexFileReader implements BaseDexFileReader {
                     read_annotation_set_item(param_annotation_offset, dpav);
                 }
             } catch (Exception e) {
-                throw new DexException(e, "while accept parameter annotation in parameter:[%d]", j);
+                throw new DexException(e, "while pipe parameter annotation in parameter:[%d]", j);
             }
         }
     }

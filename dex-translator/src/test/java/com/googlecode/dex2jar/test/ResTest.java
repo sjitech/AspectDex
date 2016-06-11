@@ -100,7 +100,7 @@ public class ResTest {
                     File distFile = new File(dex.getParentFile(), getBaseName(dex.getName()) + "_d2j.jar");
                     DexFileNode fileNode = new DexFileNode();
                     DexFileReader r = new DexFileReader(dex);
-                    r.accept(fileNode);
+                    r.pipe(fileNode);
                     for (DexClassNode classNode : fileNode.clzs) {
                         TestUtils.translateAndCheck(fileNode, classNode);
                     }

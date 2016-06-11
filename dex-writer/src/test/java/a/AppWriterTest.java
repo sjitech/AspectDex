@@ -64,7 +64,7 @@ public class AppWriterTest implements DexConstants {
     public void test4() throws IOException {
         DexFileWriter w = new DexFileWriter();
         DexFileReader dexFileReader = new DexFileReader(new File("../dex-translator/src/test/resources/dexes/i_jetty.dex"));
-        dexFileReader.accept(w);
+        dexFileReader.pipe(w);
         w.toByteArray();
     }
 }
