@@ -164,7 +164,7 @@ public class DexReader {
      * @author <a href="mailto:pxb1988@gmail.com">Panxiaobo</a>
      * @version $Rev$
      */
-    public static class SingleDexReader {
+    private static class SingleDexReader {
 
         // private static final int REVERSE_ENDIAN_CONSTANT = 0x78563412;
 
