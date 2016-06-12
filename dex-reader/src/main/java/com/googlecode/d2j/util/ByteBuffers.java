@@ -65,12 +65,12 @@ public class ByteBuffers {
         return sint(data, offset);
     }
 
-    public static int ubyte(byte[] insns, int offset) {
-        return 0xFF & insns[offset];
+    public static int ubyte(byte[] insn, int offset) {
+        return 0xFF & insn[offset];
     }
 
-    public static int sbyte(byte[] insns, int offset) {
-        return insns[offset];
+    public static int sbyte(byte[] insn, int offset) {
+        return insn[offset];
     }
 
     public static int readULeb128i(ByteBuffer in) {
@@ -87,18 +87,18 @@ public class ByteBuffers {
     }
 
     public static int readLeb128i(ByteBuffer in) {
-        int bitpos = 0;
+        int bitPos = 0;
         int vln = 0;
         do {
             int inp = in.get();
-            vln |= (inp & 0x7F) << bitpos;
-            bitpos += 7;
+            vln |= (inp & 0x7F) << bitPos;
+            bitPos += 7;
             if ((inp & 0x80) == 0) {
                 break;
             }
         } while (true);
-        if (((1L << (bitpos - 1)) & vln) != 0) {
-            vln -= (1L << bitpos);
+        if (((1L << (bitPos - 1)) & vln) != 0) {
+            vln -= (1L << bitPos);
         }
         return vln;
     }
