@@ -240,17 +240,6 @@ public class DexReader {
             debugInfoIn = in.duplicate().order(ByteOrder.LITTLE_ENDIAN);
         }
 
-        /**
-         * Reads a string index. String indices are offset by 1, and a 0 value in the stream (-1 as returned by this
-         * method) means "null"
-         *
-         * @return index into file's string ids table, -1 means null
-         */
-        private static int readStringIndex(ByteBuffer bs) {
-            int offsetIndex = ByteBuffers.readULeb128i(bs);
-            return offsetIndex - 1;
-        }
-
         static void WARN(String fmt, Object... args) {
             System.err.println(String.format(fmt, args));
         }
@@ -289,7 +278,7 @@ public class DexReader {
                 String paramType = params[i];
                 LocalEntry le;
 
-                int nameIdx = readStringIndex(in);
+                int nameIdx = ByteBuffers.readStringIndex(in);
                 String name = getString(nameIdx);
                 le = new LocalEntry(name, paramType);
                 lastEntryForReg[curReg] = le;
@@ -309,8 +298,8 @@ public class DexReader {
                 switch (opcode) {
                     case DBG_START_LOCAL: {
                         int reg = ByteBuffers.readULeb128i(in);
-                        int nameIdx = readStringIndex(in);
-                        int typeIdx = readStringIndex(in);
+                        int nameIdx = ByteBuffers.readStringIndex(in);
+                        int typeIdx = ByteBuffers.readStringIndex(in);
                         String name = getString(nameIdx);
                         String type = getType(typeIdx);
                         DEBUG_DEBUG("Start: v%d :%s, %s", reg, name, type);
@@ -323,9 +312,9 @@ public class DexReader {
 
                     case DBG_START_LOCAL_EXTENDED: {
                         int reg = ByteBuffers.readULeb128i(in);
-                        int nameIdx = readStringIndex(in);
-                        int typeIdx = readStringIndex(in);
-                        int sigIdx = readStringIndex(in);
+                        int nameIdx = ByteBuffers.readStringIndex(in);
+                        int typeIdx = ByteBuffers.readStringIndex(in);
+                        int sigIdx = ByteBuffers.readStringIndex(in);
                         String name = getString(nameIdx);
                         String type = getType(typeIdx);
                         String signature = getString(sigIdx);

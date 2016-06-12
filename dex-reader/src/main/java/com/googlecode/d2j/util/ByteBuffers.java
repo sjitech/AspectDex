@@ -108,4 +108,15 @@ public class ByteBuffers {
             labelsMap.put(offset, new DexLabel(offset));
         }
     }
+
+    /**
+     * Reads a string index. String indices are offset by 1, and a 0 value in the stream (-1 as returned by this
+     * method) means "null"
+     *
+     * @return index into file's string ids table, -1 means null
+     */
+    public static int readStringIndex(ByteBuffer bs) {
+        int offsetIndex = readULeb128i(bs);
+        return offsetIndex - 1;
+    }
 }
